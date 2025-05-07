@@ -1,0 +1,22 @@
+anchor_version = "0.29"
+
+[features]
+seeds = false
+
+[programs.localnet]
+amm = "FairNwm3kBGhqQywmsKib3nbEUYR1EWLXLsmjut3kGar"
+referral = "NFTqT8aVmB4WjzFkyKX9h5sEhhbTowNpuwbKNi2CZXs"
+
+[programs.devnet]
+amm = "FairNwm3kBGhqQywmsKib3nbEUYR1EWLXLsmjut3kGar"
+referral = "NFTqT8aVmB4WjzFkyKX9h5sEhhbTowNpuwbKNi2CZXs"
+
+[registry]
+url = "https://github.com/Topo-Labs/Coinfair-Solana"
+
+[provider]
+cluster = "localnet" # localnet/devnet
+wallet = "~/.config/solana/id.json"
+
+[idl]
+out_dir = "target/idl"

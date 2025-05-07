@@ -1,0 +1,13 @@
+[package]
+name = "referral"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "referral"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+anchor-lang = { version = "0.29.0", features = ["init-if-needed", "client"] }
+anchor-spl = { version = "0.29.0", features = ["metadata"] }
+mpl-token-metadata = { version = "1.7.0", features = ["no-entrypoint"] }
