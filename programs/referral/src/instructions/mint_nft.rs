@@ -1,5 +1,5 @@
 use crate::error::ReferralError;
-use crate::states::ReferralConfig;
+use crate::states::{ReferralAccount, ReferralConfig};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, MintTo, Token, TokenAccount};
 
@@ -15,6 +15,16 @@ pub struct MintReferralNFT<'info> {
         bump = config.bump,
     )]
     pub config: Account<'info, ReferralConfig>,
+
+    /// 记录当前用户的推荐关系
+    #[account(
+        init_if_needed,
+        payer = authority,
+        space = 8 + std::mem::size_of::<ReferralAccount>(),
+        seeds = [b"referral", authority.key().as_ref()],
+        bump
+    )]
+    pub user_referral: Account<'info, ReferralAccount>,
 
     /// 官方NFT Mint
     #[account(
@@ -32,6 +42,29 @@ pub struct MintReferralNFT<'info> {
     )]
     pub user_ata: Account<'info, TokenAccount>,
 
+    /// CHECK: PDA signer only, never mutated
+    #[account(
+        seeds = [b"mint_authority"],
+        bump,
+    )]
+    pub mint_authority: UncheckedAccount<'info>,
+
+    /// CHECK: PDA-only，NFT 暂存在此账户中
+    #[account(
+        seeds = [b"nft_pool", authority.key().as_ref()],
+        bump,
+    )]
+    pub nft_pool_authority: UncheckedAccount<'info>,
+
+    /// 存放 NFT 的 ATA，属于 PDA 拥有者（将NFT给到池子，统一保管）
+    #[account(
+        init_if_needed,
+        payer = authority,
+        associated_token::mint = official_mint,
+        associated_token::authority = nft_pool_authority,
+    )]
+    pub nft_pool_account: Account<'info, TokenAccount>,
+
     /// 基础依赖
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -42,14 +75,26 @@ pub struct MintReferralNFT<'info> {
 pub fn mint_nft(ctx: Context<MintReferralNFT>, amount: u64) -> Result<()> {
     require!(amount > 0, ReferralError::InvalidMintAmount); // 防止乱mint 0个
 
+    // 初始化 user_referral 内容（如果是新账户）
+    let referral = &mut ctx.accounts.user_referral;
+    if referral.upper.is_none() && referral.upper_upper.is_none() {
+        referral.upper = None;
+        referral.upper_upper = None;
+        referral.nft_mint = ctx.accounts.official_mint.key(); // 绑定用的 NFT mint 地址
+        referral.bump = ctx.bumps.user_referral; // 从 PDA bump 中获取
+    }
+
+    let seeds = &[b"mint_authority" as &[u8], &[ctx.bumps.mint_authority]];
+
     token::mint_to(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             MintTo {
                 mint: ctx.accounts.official_mint.to_account_info(),
-                to: ctx.accounts.user_ata.to_account_info(),
-                authority: ctx.accounts.authority.to_account_info(),
+                to: ctx.accounts.nft_pool_account.to_account_info(), // mint 到 PDA 中转账户
+                authority: ctx.accounts.mint_authority.to_account_info(), // PDA 签名
             },
+            &[seeds],
         ),
         amount,
     )?;

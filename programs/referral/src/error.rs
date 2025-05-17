@@ -22,4 +22,10 @@ pub enum ReferralError {
 
     #[msg("Invalid claim fee.")]
     InvalidClaimFee,
+
+    #[msg("Invalid referral code: NFTNotFromUpper")]
+    NFTNotFromUpper,
+    //
+    #[msg("Not approved")]
+    NotApproved,
 }

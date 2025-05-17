@@ -1,9 +1,13 @@
+use crate::error::ReferralError;
 use crate::states::ReferralConfig;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct InitReferralConfig<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        address = crate::admin::id() @ ReferralError::NotApproved
+    )]
     pub payer: Signer<'info>,
 
     #[account(
@@ -33,3 +37,5 @@ pub fn init_config(
     config.bump = ctx.bumps.config;
     Ok(())
 }
+
+// TODO: Add update_config

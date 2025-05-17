@@ -2,7 +2,7 @@ use crate::states::ReferralAccount;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-pub struct GetReferrer<'info> {
+pub struct GetUpper<'info> {
     /// CHECK: 用户地址，客户端传过来的
     pub user: UncheckedAccount<'info>,
 
@@ -14,7 +14,15 @@ pub struct GetReferrer<'info> {
     pub referral_account: Account<'info, ReferralAccount>,
 }
 
-pub fn get_upper(ctx: Context<GetReferrer>) -> Result<(Option<Pubkey>, Option<Pubkey>)> {
+/// Use for Client
+pub fn get_upper(ctx: Context<GetUpper>) -> Result<Option<Pubkey>> {
     let referral = &ctx.accounts.referral_account;
-    Ok((referral.upper, referral.upper_upper))
+    Ok(referral.upper)
+}
+
+/// Use for CPI
+pub fn get_upper_for_cpi(ctx: Context<GetUpper>) -> Result<()> {
+    let referral = &ctx.accounts.referral_account;
+    msg!("upper: {:?}", referral.upper);
+    Ok(())
 }

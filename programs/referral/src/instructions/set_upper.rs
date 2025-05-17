@@ -2,6 +2,8 @@ use crate::error::ReferralError;
 use crate::states::ReferralAccount;
 use anchor_lang::prelude::*;
 
+// Usless
+
 #[derive(Accounts)]
 pub struct SetUpper<'info> {
     #[account(mut)]
