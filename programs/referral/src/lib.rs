@@ -47,4 +47,8 @@ pub mod referral {
     pub fn get_upper_for_idl(ctx: Context<GetUpper>) -> Result<()> {
         get_upper::get_upper_for_cpi(ctx)
     }
+
+    pub fn update_nft_mint(ctx: Context<UpdateNftMint>, new_nft_mint: Pubkey) -> Result<()> {
+        init_config::update_nft_mint(ctx, new_nft_mint)
+    }
 }
