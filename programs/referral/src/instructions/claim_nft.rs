@@ -1,4 +1,5 @@
 use crate::error::ReferralError;
+use crate::instructions::mint_nft::MintCounter;
 use crate::states::{ReferralAccount, ReferralConfig};
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
@@ -24,6 +25,17 @@ pub struct ClaimReferralNFT<'info> {
         bump
     )]
     pub user_referral: Account<'info, ReferralAccount>,
+
+    /// 上级 NFT mint 次数记录
+    #[account(
+        mut,
+        // init_if_needed,
+        // payer = user,
+        // space = 8 + std::mem::size_of::<MintCounter>(),
+        seeds = [b"mint_counter", upper.key().as_ref()],
+        bump
+    )]
+    pub upper_mint_counter: Account<'info, MintCounter>,
 
     /// 读取上级的推荐信息
     #[account(
@@ -120,8 +132,16 @@ pub fn claim_nft(ctx: Context<ClaimReferralNFT>) -> Result<()> {
     // --------- 设置推荐关系 ----------
 
     user_referral.upper = Some(ctx.accounts.upper.key());
-    user_referral.upper_upper = ctx.accounts.upper_referral.upper;
+    // user_referral.upper_upper = ctx.accounts.upper_referral.upper;
 
+    // 4. 更新上级的 mint_counter
+    let counter = &mut ctx.accounts.upper_mint_counter;
+
+    if counter.remain_mint == 0 {
+        msg!("❌ No remaining mint");
+        return Err(ReferralError::NoRemainingMint.into());
+    }
+    counter.remain_mint -= 1;
     // 2. 扣除手续费
     // token::transfer(
     //     CpiContext::new(

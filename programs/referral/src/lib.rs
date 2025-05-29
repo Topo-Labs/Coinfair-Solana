@@ -51,4 +51,8 @@ pub mod referral {
     pub fn update_nft_mint(ctx: Context<UpdateNftMint>, new_nft_mint: Pubkey) -> Result<()> {
         init_config::update_nft_mint(ctx, new_nft_mint)
     }
+
+    pub fn get_mint_counter(ctx: Context<GetMintCounter>) -> Result<(u64, u64)> {
+        get_mint_counter::get_mint_counter(ctx)
+    }
 }

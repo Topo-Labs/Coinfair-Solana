@@ -3,6 +3,14 @@ use crate::states::{ReferralAccount, ReferralConfig};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, MintTo, Token, TokenAccount};
 
+#[account]
+pub struct MintCounter {
+    pub minter: Pubkey,   // 用户地址
+    pub total_mint: u64,  // 总 mint 数量
+    pub remain_mint: u64, // 剩余可被 claim 的数量
+    pub bump: u8,         // PDA bump
+}
+
 #[derive(Accounts)]
 pub struct MintReferralNFT<'info> {
     /// 铸造人
@@ -41,6 +49,16 @@ pub struct MintReferralNFT<'info> {
         associated_token::authority = authority,
     )]
     pub user_ata: Account<'info, TokenAccount>,
+
+    /// 记录用户mint数量和剩余claim数
+    #[account(
+        init_if_needed,
+        payer = authority,
+        space = 8 + std::mem::size_of::<MintCounter>(),
+        seeds = [b"mint_counter", authority.key().as_ref()],
+        bump
+    )]
+    pub mint_counter: Account<'info, MintCounter>,
 
     /// CHECK: PDA signer only, never mutated
     #[account(
@@ -83,6 +101,13 @@ pub fn mint_nft(ctx: Context<MintReferralNFT>, amount: u64) -> Result<()> {
         referral.nft_mint = ctx.accounts.official_mint.key(); // 绑定用的 NFT mint 地址
         referral.bump = ctx.bumps.user_referral; // 从 PDA bump 中获取
     }
+
+    // 更新用户 mint 计数器
+    let counter = &mut ctx.accounts.mint_counter;
+    counter.minter = ctx.accounts.authority.key(); // 初始化时赋值
+    counter.total_mint = counter.total_mint.saturating_add(amount);
+    counter.remain_mint = counter.remain_mint.saturating_add(amount);
+    counter.bump = ctx.bumps.mint_counter;
 
     let seeds = &[b"mint_authority" as &[u8], &[ctx.bumps.mint_authority]];
 

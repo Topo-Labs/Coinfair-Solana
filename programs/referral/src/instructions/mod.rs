@@ -12,3 +12,6 @@ pub use get_upper::*;
 
 pub mod init_config;
 pub use init_config::*;
+
+pub mod get_mint_counter;
+pub use get_mint_counter::*;

@@ -28,4 +28,7 @@ pub enum ReferralError {
     //
     #[msg("Not approved")]
     NotApproved,
+
+    #[msg("NFT is not enough")]
+    NoRemainingMint,
 }
