@@ -33,13 +33,13 @@ pub struct ClaimReferralNFT<'info> {
     pub upper_referral: Account<'info, ReferralAccount>,
 
     /// 上级持有的 NFT TokenAccount
-    #[account(
-        mut,
-        constraint = upper_nft_account.mint == official_mint.key(),
-        constraint = upper_nft_account.owner == upper.key(),
-        constraint = upper_nft_account.amount >= 1,
-    )]
-    pub upper_nft_account: Account<'info, TokenAccount>,
+    // #[account(
+    //     mut,
+    //     constraint = upper_nft_account.mint == official_mint.key(),
+    //     constraint = upper_nft_account.owner == upper.key(),
+    //     constraint = upper_nft_account.amount >= 1,
+    // )]
+    // pub upper_nft_account: Account<'info, TokenAccount>,
 
     /// 全局配置，包含官方NFT mint地址、手续费等信息
     #[account(
@@ -57,7 +57,8 @@ pub struct ClaimReferralNFT<'info> {
 
     /// 用户的ATA账户，接收NFT
     #[account(
-        mut,
+        init_if_needed,
+        payer = user,
         associated_token::mint = official_mint,
         associated_token::authority = user,
     )]
