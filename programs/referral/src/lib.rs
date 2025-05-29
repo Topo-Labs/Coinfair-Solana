@@ -7,10 +7,10 @@ pub mod utils;
 use anchor_lang::prelude::*;
 use instructions::*;
 
-#[cfg(feature = "localnet")]
-declare_id!("NFTqT8aVmB4WjzFkyKX9h5sEhhbTowNpuwbKNi2CZXs");
+// #[cfg(feature = "localnet")]
+// declare_id!("NFTqT8aVmB4WjzFkyKX9h5sEhhbTowNpuwbKNi2CZXs");
 
-#[cfg(not(feature = "localnet"))]
+// #[cfg(not(feature = "localnet"))]
 declare_id!("REFxcjx4pKym9j5Jzbo9wh92CtYTzHt9fqcjgvZGvUL");
 
 pub mod admin {
